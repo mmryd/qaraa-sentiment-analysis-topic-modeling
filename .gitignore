@@ -218,3 +218,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# data hasil pipeline (bisa dibuat ulang dari kode)
+ulasan_qaraa_*.csv
+!ulasan_qaraa_final.csv
+!ulasan_qaraa_label_manual.csv
