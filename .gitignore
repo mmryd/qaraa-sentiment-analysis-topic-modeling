@@ -219,8 +219,16 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# data hasil pipeline (bisa dibuat ulang dari kode)
-ulasan_qaraa_*.csv
-!ulasan_qaraa_final.csv
-!ulasan_qaraa_label_manual.csv
-log_drop_*.csv
+# data pengguna dan hasil antara
+data/raw/
+data/interim/
+data/kamus/
+*.csv
+
+# model dan gambar hasil
+models/*.joblib
+*.png
+
+# python dan jupyter
+*.pyc
+.ipynb_checkpoints/
