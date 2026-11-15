@@ -10,41 +10,56 @@ from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFacto
 
 FILE_SLANG = Path(__file__).resolve().parent.parent / 'data' / 'kamus' / 'colloquial-indonesian-lexicon.csv'
 
-# variasi frasa yang mengandung tanda baca atau spasi, diproses sebelum tanda baca dihapus
-VARIASI_FRASA = {
-    "qara'a": "qaraa",
-    "qoro'a": "qaraa",
-    "al-qur'an": "quran",
-    "al-quran": "quran",
-    "alqur'an": "quran",
-    "al qur'an": "quran",
-    "al quran": "quran",
-    "alquran": "quran",
-    "muraja'ah": "murajaah",
-    "non aktif": "tidak aktif",
-}
-
 # tambahan kata manual sesuai kebutuhan aplikasi
 TAMBAHAN_MANUAL = {
     # typo dan singkatan umum aplikasi
     'apk': 'aplikasi', 'apps': 'aplikasi', 'app': 'aplikasi',
     'aaplikasi': 'aplikasi', 'aplikasinya': 'aplikasi',
     'min': 'admin', 'mimim': 'admin',
-    'download': 'unduh', 'update': 'perbarui',
+    'download': 'unduh', 'mendownload': 'unduh', 'update': 'perbarui',
     'loading': 'muat', 'lemot': 'lambat',
     'login': 'masuk', 'sign': 'masuk',
 
-    # konsistensi kata rusak
+    # konsistensi kata rusak dan error
     'error': 'eror',
     'crash': 'rusak',
 
     # istilah agama dan arab khas qara'a
     'qara': 'qaraa', 'qoro': 'qaraa', 'qoroa': 'qaraa', 'kora': 'qaraa',
-    'qur': 'quran', 'alquran': 'quran',
+    'qur': 'quran', 'alquran': 'quran', 'aquran': 'quran',
     'ngaji': 'mengaji',
-    'insyaallah': 'insya allah', 'subhanallah': 'subhanallah',
-    'alhamdulillah': 'alhamdulillah', 'barakallah': 'barakallah',
+    'insyaallah': 'insyaallah',
+    'masya': 'masyaallah', 'masyaa': 'masyaallah',
+    'subhanallah': 'subhanallah',
+    'alhamdulillah': 'alhamdulillah', 'alhamdulilah': 'alhamdulillah',
+    'allhamdulillah': 'alhamdulillah',
+    'barakallah': 'barakallah',
     'syukron': 'terimakasih',
+    'mudahan': 'mudahan',
+
+    # ejaan baku salat dan hadis
+    'sholat': 'salat', 'shalat': 'salat', 'solat': 'salat',
+    'hadist': 'hadis', 'hadits': 'hadis',
+
+    # sufiks -nya yang sering muncul, dipetakan eksplisit agar tidak memotong kata lain
+    'apknya': 'aplikasi', 'appnya': 'aplikasi', 'appsnya': 'aplikasi',
+    'aplikasihnya': 'aplikasi', 'aplilasinya': 'aplikasi',
+    'loadingnya': 'muat', 'downloadnya': 'unduh',
+    'fiturnya': 'fitur', 'piturnya': 'fitur',
+    'adminnya': 'admin', 'servernya': 'server', 'responnya': 'respon',
+    'adzannya': 'adzan', 'sholatnya': 'salat', 'solatnya': 'salat',
+    'ngajinya': 'mengaji', 'dzikirnya': 'dzikir', 'ustadznya': 'ustadz',
+    'hadistnya': 'hadis', 'hadisnya': 'hadis',
+    'smuanya': 'semua', 'dlmnya': 'dalam', 'jdinya': 'jadi',
+    'latinnya': 'latin', 'rejekinya': 'rezeki', 'bugnya': 'bug',
+    'pembelajaranya': 'pembelajaran',
+
+    # ejaan dan typo dari sampel ulasan
+    'trims': 'terimakasih', 'trima': 'terimakasih', 'mksh': 'terimakasih',
+    'tapu': 'tapi', 'bangat': 'banget', 'dngn': 'dengan',
+    'mhami': 'memahami', 'bermangfaat': 'bermanfaat', 'pringatan': 'peringatan',
+    'kalok': 'kalau', 'klo': 'kalau', 'klu': 'kalau',
+    'mlm': 'malam', 'slalu': 'selalu',
 
     # variasi tidak
     'ga': 'tidak', 'gak': 'tidak', 'gk': 'tidak', 'tdk': 'tidak',
@@ -63,7 +78,7 @@ TAMBAHAN_MANUAL = {
     'dah': 'sudah', 'sdh': 'sudah', 'udh': 'sudah',
     'blm': 'belum',
     'bisa': 'dapat', 'bs': 'bisa',
-    'kalo': 'kalau', 'kl': 'kalau',
+    'kl': 'kalau',
     'cuma': 'hanya', 'cuman': 'hanya',
     'kayak': 'seperti', 'kek': 'seperti',
     'aja': 'saja',
@@ -80,9 +95,16 @@ TAMBAHAN_MANUAL = {
     'mantap': 'bagus', 'mantul': 'bagus', 'keren': 'bagus',
 
     # kata tunggal yang sebelumnya ada di cleaning, dipindah ke sini
-    'qoro': 'qaraa', 'qoroa': 'qaraa', 'kora': 'qaraa',
     'unsubscribe': 'berhenti langganan', 'unsubs': 'berhenti langganan',
     'nonaktif': 'tidak aktif',
+
+    # typo dan ejaan dari sampel ulasan kedua
+    'mengngaji': 'mengaji',
+    'ustazah': 'ustadzah', 'ustazh': 'ustadzah', 'ustad': 'ustadz',
+    'buaya': 'buka',
+    'usernya': 'pengguna',
+    'sya': 'saya',
+    'dev': 'developer',
 }
 
 # perbaikan kata yang over-stemmed oleh sastrawi
@@ -116,11 +138,14 @@ _MORE_STOPWORDS = [
     'kak', 'kakak', 'gan', 'sis', 'bro', 'pak', 'bu', 'min', 'admin',
     'yaitu', 'yakni', 'atas', 'dari', 'ke', 'di', 'ini', 'itu',
     'aplikasi', 'user', 'pengguna', 'orang',
+    # kata inggris dan artikel yang tersisa dari ulasan
+    'the', 'is', 'for', 'and', 'of', 'on', 'with', 'to', 'in', 'al',
+    'btw', 'nnya', 'annya',
 ]
 
 
 def _muat_kamus_alay():
-    # kamus slang dari salinan lokal, lalu ditambah tambahan_manual (urutan sama dengan notebook)
+    # kamus slang dari salinan lokal, lalu ditambah tambahan_manual
     df_kamus = pd.read_csv(FILE_SLANG)
     kamus = dict(zip(df_kamus['slang'], df_kamus['formal']))
     kamus.update(TAMBAHAN_MANUAL)
@@ -136,10 +161,54 @@ FINAL_STOPWORDS = set(
 STEMMER = StemmerFactory().create_stemmer()
 
 
-def tahap_cleaning(text):
-    # ganti variasi frasa dengan bentuk baku (batas kata agar tidak mengenai kata lain)
+def normalisasi_quran(text):
+    # samakan apostrof melengkung dan tanda serupa
+    text = text.replace('’', "'").replace('‘', "'").replace('`', "'")
+    # al-qur'an, al qur,an, qur-an, qur~an, alwur,an, kur,an, qur'annya, dan pemisah lain
+    text = re.sub(r"\b(?:al)?[\W_]*(?:qur|wur|kur)[\W_]*an(?:nya)?\b", 'quran', text)
+    # sisa "quran an" dan "quran annya" yang terpisah spasi
+    text = re.sub(r"\bquran\s+a*n+ya?\b", 'quran', text)
+    return text
+
+
+def normalisasi_umum(text):
+    # ejaan dan typo yang harus dikenali sebelum angka dan tanda baca dihapus
+    text = re.sub(r"\balloh\b", 'allah', text)
+    text = re.sub(r"\bmudah[\W_]*2?[\W_]*an\b", 'mudahan', text)
+    text = re.sub(r"\b(?:wara|q?ara)[\W_]*a\b", 'qaraa', text)
+    text = re.sub(r"\bta[\W_]*ala\b", 'taala', text)
+    return text
+
+
+# frasa yang harus menjadi satu token
+VARIASI_FRASA = {
+    "qara'a": "qaraa",
+    "qoro'a": "qaraa",
+    "muraja'ah": "murajaah",
+    "non aktif": "tidak aktif",
+    # frasa religius menjadi satu token
+    "masya allah": "masyaallah",
+    "masya-allah": "masyaallah",
+    "masha allah": "masyaallah",
+    "masha-allah": "masyaallah",
+    "masyaa allah": "masyaallah",
+    "insya allah": "insyaallah",
+    "insya-allah": "insyaallah",
+    "terima kasih": "terimakasih",
+}
+
+
+def satukan_frasa(text):
+    # ganti frasa multi-kata menjadi satu token, dipanggil di cleaning dan setelah normalisasi kamus
     for asal, tujuan in VARIASI_FRASA.items():
         text = re.sub(r'\b' + re.escape(asal) + r'\b', tujuan, text)
+    return text
+
+
+def tahap_cleaning(text):
+    text = normalisasi_quran(text)
+    text = normalisasi_umum(text)
+    text = satukan_frasa(text)
 
     # hapus mention dan hashtag
     text = re.sub(r'@[A-Za-z0-9_]+', '', text)
@@ -166,7 +235,9 @@ def tahap_cleaning(text):
 
 
 def tahap_normalization(text):
-    return ' '.join(KAMUS_ALAY.get(w, w) for w in text.split())
+    hasil = ' '.join(KAMUS_ALAY.get(w, w) for w in text.split())
+    # kamus bisa menghasilkan frasa baru, misalnya "trims" menjadi "terima kasih"
+    return satukan_frasa(hasil)
 
 
 def tahap_stopwords(text):
@@ -182,7 +253,7 @@ def manual_stemming(text):
 
 
 def preprocess_teks(teks):
-    # urutan harus sama persis dengan pipeline data latih di notebook
+    # urutan harus sama persis dengan pipeline data latih
     if teks is None or (isinstance(teks, float) and pd.isna(teks)):
         return ''
     teks = str(teks).lower()           # case folding
