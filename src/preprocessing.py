@@ -263,3 +263,49 @@ def preprocess_teks(teks):
     teks = tahap_stemming(teks)
     teks = manual_stemming(teks)
     return ' '.join(teks.split())
+
+def tahap_tokenizing(text):
+    # pecah teks menjadi daftar kata, sama dengan tahap tokenizing di notebook
+    return text.split()
+
+
+def jalankan_tahap(df_raw):
+    # jalankan seluruh tahap pada data mentah, kembalikan tabel tiap tahap dan log data yang dibuang
+    # id diambil dari posisi baris raw, jangan diubah agar sejajar dengan validasi manual
+    df = df_raw[['content', 'score']].copy()
+    df.insert(0, 'id', range(len(df)))
+    log = []
+
+    df['content_cf'] = df['content'].str.lower()
+    tahap = {'casefolding': df[['id', 'content', 'content_cf', 'score']].copy()}
+
+    df['content_cleaning'] = df['content_cf'].apply(tahap_cleaning)
+    kosong = df['content_cleaning'].str.strip() == ''
+    log.append(df.loc[kosong, ['id', 'content', 'score']].assign(tahap='cleaning'))
+    df = df[~kosong].reset_index(drop=True)
+    tahap['cleaning'] = df[['id', 'content', 'content_cleaning', 'score']].copy()
+
+    df['content_norm'] = df['content_cleaning'].apply(tahap_normalization)
+    tahap['normalisasi'] = df[['id', 'content', 'content_norm', 'score']].copy()
+
+    df['content_sw'] = df['content_norm'].apply(tahap_stopwords)
+    kosong = df['content_sw'].str.strip() == ''
+    log.append(df.loc[kosong, ['id', 'content', 'score']].assign(tahap='stopword'))
+    df = df[~kosong].reset_index(drop=True)
+    tahap['stopword'] = df[['id', 'content', 'content_sw', 'score']].copy()
+
+    df['content_stem'] = df['content_sw'].apply(tahap_stemming).apply(manual_stemming)
+    tahap['stemming'] = df[['id', 'content', 'content_stem', 'score']].copy()
+
+    df['content_token'] = df['content_stem'].apply(tahap_tokenizing)
+    tahap['tokenizing'] = df[['id', 'content', 'content_token', 'score']].copy()
+
+    log_all = pd.concat(log, ignore_index=True)
+    return tahap, log_all
+
+
+def simpan_tahap(tahap, log_all, path_tahap, path_log):
+    # tulis tiap tahap dan log ke path yang diberikan, dipanggil hanya jika flag pipeline aktif
+    for nama, tabel in tahap.items():
+        tabel.to_csv(path_tahap[nama], index=False, encoding='utf-8-sig')
+    log_all.to_csv(path_log, index=False, encoding='utf-8-sig')
